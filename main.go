@@ -7,29 +7,21 @@ import (
 )
 
 func main() {
-	inputs := m.Matrix([][]float64{
-		{1},
-		{2},
-		{3},
-		{4},
-	})
-	weights := m.Matrix([][]float64{
-		{1, 2, 3, 4},
-		{1, 2, 3, 4},
-		{1, 2, 3, 4},
-	})
-	bias := m.Matrix([][]float64{
-		{1},
-		{2},
-		{3},
-	})
+	inputs := m.Matrix{
+		{1.0, 2.0, 3.0, 2.5},
+		{2.0, 5.0, -1.0, 2.0},
+		{-1.5, 2.7, 3.3, -0.8},
+	}
+	weights := m.Matrix{
+		{0.2, 0.8, -0.5, 1.0},
+		{0.5, -0.91, 0.26, -0.5},
+		{-0.26, -0.27, 0.17, 0.87},
+	}
+	biases := m.Vector{2.0, 3.0, 0.5}
 
-	// result = bias + (weights * inputs)
-	result := bias.Add(weights.Multiply(inputs))
+	result := (inputs.Multiply(weights.Transpose())).AddVector(biases)
 
 	for _, v := range result {
-		for _, w := range v {
-			fmt.Println(w)
-		}
+		fmt.Println(v)
 	}
 }
