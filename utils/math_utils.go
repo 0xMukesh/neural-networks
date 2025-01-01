@@ -25,14 +25,3 @@ func ZeroMatrix(rows, cols int) m.Matrix {
 
 	return matrix
 }
-
-// sum of all the components in a vector
-func VecCompSum(v m.Vector) float64 {
-	sum := 0.0
-
-	for i := range v {
-		sum += v[i]
-	}
-
-	return sum
-}

@@ -23,25 +23,21 @@ func main() {
 	dl2Result := denselayer2.Forward(reluResult)
 	softmaxResult := neural.SoftmaxActivationFunc(dl2Result)
 
-	for _, v := range dl1Result {
-		fmt.Println(v)
+	targetClasses := m.Matrix{
+		{0, 1, 0, 0},
+		{1, 0, 0, 0},
+		{0, 0, 1, 0},
 	}
 
-	fmt.Println(strings.Repeat("=", 10))
-
-	for _, v := range reluResult {
-		fmt.Println(v)
-	}
-
-	fmt.Println(strings.Repeat("=", 10))
-
-	for _, v := range dl2Result {
-		fmt.Println(v)
-	}
-
-	fmt.Println(strings.Repeat("=", 10))
+	losses := neural.CategoricalCrossEntropyLoss(targetClasses, softmaxResult)
 
 	for _, v := range softmaxResult {
+		fmt.Println(v)
+	}
+
+	fmt.Println(strings.Repeat("=", 10))
+
+	for _, v := range losses {
 		fmt.Println(v)
 	}
 }
