@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	m "github.com/0xmukesh/neural-networks/math"
 	"github.com/0xmukesh/neural-networks/neural"
-	"github.com/0xmukesh/neural-networks/neural/activations"
 )
 
 func main() {
@@ -15,17 +15,33 @@ func main() {
 		{-1.5, 2.7, 3.3, -0.8},
 	}
 
-	denselayer := neural.NewDenseLayer(inputs, 4, 3)
-	dlResult := denselayer.Forward()
+	denselayer1 := neural.NewDenseLayer(4, 3)
+	denselayer2 := neural.NewDenseLayer(3, 3)
 
-	for _, v := range dlResult {
+	dl1Result := denselayer1.Forward(inputs)
+	reluResult := neural.ReluActivationFunc(dl1Result)
+	dl2Result := denselayer2.Forward(reluResult)
+	softmaxResult := neural.SoftmaxActivationFunc(dl2Result)
+
+	for _, v := range dl1Result {
 		fmt.Println(v)
 	}
 
-	reluActivation := activations.NewRelu(dlResult)
-	reluResult := reluActivation.Forward()
+	fmt.Println(strings.Repeat("=", 10))
 
 	for _, v := range reluResult {
+		fmt.Println(v)
+	}
+
+	fmt.Println(strings.Repeat("=", 10))
+
+	for _, v := range dl2Result {
+		fmt.Println(v)
+	}
+
+	fmt.Println(strings.Repeat("=", 10))
+
+	for _, v := range softmaxResult {
 		fmt.Println(v)
 	}
 }
