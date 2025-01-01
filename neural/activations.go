@@ -8,7 +8,7 @@ import (
 	"github.com/0xmukesh/neural-networks/utils"
 )
 
-// ReLU is used applying non-linear transformation on the network
+// ReLU is used for applying non-linear transformation on the network
 func ReluActivationFunc(input m.Matrix) m.Matrix {
 	output := m.AllocateMatrix(input.Rows(), input.Cols())
 

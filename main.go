@@ -24,12 +24,13 @@ func main() {
 	softmaxResult := neural.SoftmaxActivationFunc(dl2Result)
 
 	targetClasses := m.Matrix{
-		{0, 1, 0, 0},
-		{1, 0, 0, 0},
-		{0, 0, 1, 0},
+		{0, 1, 0},
+		{1, 0, 0},
+		{0, 0, 1},
 	}
 
-	losses := neural.CategoricalCrossEntropyLoss(targetClasses, softmaxResult)
+	ccel := neural.CategoricalCrossEntropy{}
+	losses := ccel.Loss(targetClasses, softmaxResult)
 
 	for _, v := range softmaxResult {
 		fmt.Println(v)
@@ -40,4 +41,9 @@ func main() {
 	for _, v := range losses {
 		fmt.Println(v)
 	}
+
+	avgLoss := neural.CalculateLoss(targetClasses, softmaxResult, ccel)
+	fmt.Printf("avg loss - %f\n", avgLoss)
+	accuracy := neural.CalculateAccuracy(targetClasses, softmaxResult)
+	fmt.Printf("accuracy - %f\n", accuracy)
 }
