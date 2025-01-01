@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	m "github.com/0xmukesh/neural-networks/math"
+	"github.com/0xmukesh/neural-networks/neural"
 )
 
 func main() {
@@ -12,14 +13,9 @@ func main() {
 		{2.0, 5.0, -1.0, 2.0},
 		{-1.5, 2.7, 3.3, -0.8},
 	}
-	weights := m.Matrix{
-		{0.2, 0.8, -0.5, 1.0},
-		{0.5, -0.91, 0.26, -0.5},
-		{-0.26, -0.27, 0.17, 0.87},
-	}
-	biases := m.Vector{2.0, 3.0, 0.5}
 
-	result := (inputs.Multiply(weights.Transpose())).AddVector(biases)
+	denselayer := neural.NewDenseLayer(4, 3)
+	result := denselayer.Forward(inputs)
 
 	for _, v := range result {
 		fmt.Println(v)

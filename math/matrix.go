@@ -1,6 +1,8 @@
 package math
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Matrix []Vector
 
@@ -19,6 +21,23 @@ func (m Matrix) Rows() int {
 
 func (m Matrix) Cols() int {
 	return len(m[0])
+}
+
+// convert a column matrix into a vector
+func (m Matrix) ToVector() Vector {
+	if m.Cols() != 1 {
+		panic("not a column matrix")
+	}
+
+	vector := make(Vector, m.Rows())
+
+	for i := range m {
+		for j := range m[i] {
+			vector[i] = m[i][j]
+		}
+	}
+
+	return vector
 }
 
 // m_(axb) + n_(bxc)
