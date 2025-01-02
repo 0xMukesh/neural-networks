@@ -8,8 +8,9 @@ import (
 )
 
 type DenseLayer struct {
-	Weights m.Matrix
-	Bias    m.Vector
+	Weights           m.Matrix
+	Bias              m.Vector
+	NInputs, NNeurons int
 }
 
 func NewDenseLayer(nInputs, nNeurons int) DenseLayer {
@@ -21,11 +22,18 @@ func NewDenseLayer(nInputs, nNeurons int) DenseLayer {
 		return rand.Float64()*2 - 1
 	})
 	dl.Bias = utils.ZeroMatrix(nNeurons, 1).ToVector()
+	dl.NInputs = nInputs
+	dl.NNeurons = nNeurons
 
 	return dl
 }
 
 func (dl DenseLayer) Forward(input m.Matrix) m.Matrix {
-	output := input.Multiply(dl.Weights.Transpose()).AddVector(dl.Bias)
+	output := m.Matrix{}
+
+	for _, v := range input {
+		output = append(output, dl.Weights.Multiply(v.ToMatrix()).ToVector().Add(dl.Bias))
+	}
+
 	return output
 }

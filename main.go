@@ -12,9 +12,14 @@ import (
 
 func main() {
 	inputs := m.Matrix{
-		{1.0, 2.0, 3.0, 2.5},
-		{2.0, 5.0, -1.0, 2.0},
-		{-1.5, 2.7, 3.3, -0.8},
+		{1.0, 2.0, 3.0, 2.5, 0.9, 1.1},
+		{2.0, 5.0, -1.0, 2.0, 2.1, 5.5},
+		{-1.5, 2.7, 3.3, -0.8, -0.9, -0.89},
+		{-1.23, 0.85, -2.14, 1.67, -0.93, 1.44},
+		{0.76, -1.89, 2.31, -0.92, 1.55, -2.11},
+		{-1.67, 2.23, -0.84, 1.92, -1.43, 0.95},
+		{2.14, -1.32, 0.88, -2.45, 1.76, -0.91},
+		{-0.95, 1.78, -2.34, 0.87, -1.65, 2.21},
 	}
 
 	targetClasses := m.Matrix{
@@ -23,14 +28,14 @@ func main() {
 		{0, 0, 1},
 	}
 
-	// 4 input neurons and 3 output neurons
-	// weights = 3x4
-	// biases = 3x1
-	dl1 := neural.NewDenseLayer(4, 3)
-	// 3 input neurons and 3 output neurons
-	// weights = 3x3
-	// biases = 3x1
-	dl2 := neural.NewDenseLayer(3, 3)
+	// 6 input neurons and 5 output neurons
+	// weights = 5x6
+	// biases = 5x1
+	dl1 := neural.NewDenseLayer(6, 5)
+	// 5 input neurons and 5 output neurons
+	// weights = 5x5
+	// biases = 5x1
+	dl2 := neural.NewDenseLayer(5, 5)
 
 	lowestLoss := math.MaxFloat64
 	optimalDl1Biases := dl1.Bias
@@ -38,19 +43,19 @@ func main() {
 	optimalDl2Biases := dl2.Bias
 	optimalDl2Weights := dl2.Weights
 
-	// iterating 100 times as the input data is very small
-	for i := 1; i <= 100; i++ {
-		dl1.Weights = dl1.Weights.Add(utils.RandMatrix(3, 4, func() float64 {
+	// iterating 500 times as the input data is very small
+	for i := 1; i <= 500; i++ {
+		dl1.Weights = dl1.Weights.Add(utils.RandMatrix(5, 6, func() float64 {
 			return 0.05 * ((rand.Float64() * 2) - 1)
 		}))
-		dl1.Bias = dl1.Bias.Add(utils.RandMatrix(3, 1, func() float64 {
+		dl1.Bias = dl1.Bias.Add(utils.RandMatrix(5, 1, func() float64 {
 			return 0.05 * ((rand.Float64() * 2) - 1)
 		}).ToVector())
 
-		dl2.Weights = dl2.Weights.Add(utils.RandMatrix(3, 3, func() float64 {
+		dl2.Weights = dl2.Weights.Add(utils.RandMatrix(5, 5, func() float64 {
 			return 0.05 * ((rand.Float64() * 2) - 1)
 		}))
-		dl2.Bias = dl2.Bias.Add(utils.RandMatrix(3, 1, func() float64 {
+		dl2.Bias = dl2.Bias.Add(utils.RandMatrix(5, 1, func() float64 {
 			return 0.05 * ((rand.Float64() * 2) - 1)
 		}).ToVector())
 
@@ -82,8 +87,8 @@ func main() {
 		}
 	}
 
-	fmt.Printf("dl1 biases - %v", optimalDl1Biases)
-	fmt.Printf("dl2 biases - %v", optimalDl2Biases)
-	fmt.Printf("dl1 weights - %v", optimalDl1Weights)
-	fmt.Printf("dl2 weights - %v", optimalDl2Weights)
+	fmt.Printf("dl1 biases - %v\n", optimalDl1Biases)
+	fmt.Printf("dl2 biases - %v\n", optimalDl2Biases)
+	fmt.Printf("dl1 weights - %v\n", optimalDl1Weights)
+	fmt.Printf("dl2 weights - %v\n", optimalDl2Weights)
 }
