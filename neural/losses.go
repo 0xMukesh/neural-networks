@@ -44,12 +44,12 @@ func CalculateAccuracy(targetClasses, input m.Matrix) float64 {
 }
 
 // categorical cross entropy is a common choice for loss function whenever softmax activation function is used on the output layer
-type CategoricalCrossEntropy struct{}
+type CategoricalCrossEntropyLoss struct{}
 
 // `targetClasses` is a matrix of one-hot vectors
 // TODO: check if `targetClasses` is _actually_ a matrix of one-hot vectors
 // `input` is the result from softmax activation function
-func (l CategoricalCrossEntropy) Loss(targetClasses, input m.Matrix) m.Vector {
+func (l CategoricalCrossEntropyLoss) Loss(targetClasses, input m.Matrix) m.Vector {
 	// techinically, one-hot vectors can either be an array containing 0s and 1s where 1 indicates the desired predication ([0, 0, 1, 0] - predication at index = 2 is the desired predication)
 	// but they can also be sparse i.e. contain index of the desired predications
 	// `CategoricalCrossEntropyLoss`function doesn't support sparse one-hot vectors at the moment but according to the defination, `predicatedClassesIdxs` act like one-hot vector
