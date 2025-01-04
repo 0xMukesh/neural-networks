@@ -111,3 +111,16 @@ func (m Matrix) Transpose() Matrix {
 
 	return result
 }
+
+// applies function `f` on every single element in matrix `m`
+func (m Matrix) ForEach(f func(float64) float64) Matrix {
+	output := AllocateMatrix(m.Rows(), m.Cols())
+
+	for i := range m {
+		for j := range m[i] {
+			output[i][j] = f(m[i][j])
+		}
+	}
+
+	return output
+}

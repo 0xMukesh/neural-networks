@@ -1,4 +1,4 @@
-package neural
+package activations
 
 import (
 	"math"
@@ -8,21 +8,16 @@ import (
 	"github.com/0xmukesh/neural-networks/utils"
 )
 
-// ReLU is used for applying non-linear transformation on the network
-func ReluActivationFunc(input m.Matrix) m.Matrix {
-	output := m.AllocateMatrix(input.Rows(), input.Cols())
+type Softmax struct {
+	Input m.Matrix
+}
 
-	for i := range input {
-		for j := range input[i] {
-			output[i][j] = math.Max(0, input[i][j])
-		}
-	}
-
-	return output
+func NewSoftmax() *Softmax {
+	return &Softmax{}
 }
 
 // softmax activation function takes in unnormalized data from ReLU and converts it into normalized i.e. the values lie in between [0, 1] and the values are inclusive i.e. all of the always add up to 1 as they are probablities/confidence scores
-func SoftmaxActivationFunc(input m.Matrix) m.Matrix {
+func (s *Softmax) Forward(input m.Matrix) m.Matrix {
 	output := m.AllocateMatrix(input.Rows(), input.Cols())
 
 	for i := range input {
@@ -42,6 +37,8 @@ func SoftmaxActivationFunc(input m.Matrix) m.Matrix {
 			output[i][j] = exps[j] / sum
 		}
 	}
+
+	s.Input = input
 
 	return output
 }

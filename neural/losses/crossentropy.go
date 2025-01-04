@@ -1,47 +1,10 @@
-package neural
+package losses
 
 import (
 	"math"
 
 	m "github.com/0xmukesh/neural-networks/math"
-	"github.com/0xmukesh/neural-networks/utils"
 )
-
-type LossFn interface {
-	Loss(m.Matrix, m.Matrix) m.Vector
-}
-
-func CalculateLoss(targetClasses, input m.Matrix, lossFn LossFn) float64 {
-	losses := lossFn.Loss(targetClasses, input)
-	return utils.Mean(losses)
-}
-
-func CalculateAccuracy(targetClasses, input m.Matrix) float64 {
-	predicatedClassesIdx := []int{}
-
-	for i := range targetClasses {
-		for j := range targetClasses[i] {
-			if targetClasses[i][j] == 1 {
-				predicatedClassesIdx = append(predicatedClassesIdx, j)
-			}
-		}
-	}
-
-	accuracies := []int{}
-
-	for i, v := range predicatedClassesIdx {
-		maxElemIdx := utils.MaxElemIdx(input[i])
-		predicatedClassIdx := v
-
-		if maxElemIdx == predicatedClassIdx {
-			accuracies = append(accuracies, 1)
-		} else {
-			accuracies = append(accuracies, 0)
-		}
-	}
-
-	return utils.Mean(accuracies)
-}
 
 // categorical cross entropy is a common choice for loss function whenever softmax activation function is used on the output layer
 type CategoricalCrossEntropyLoss struct{}
@@ -52,7 +15,8 @@ type CategoricalCrossEntropyLoss struct{}
 func (l CategoricalCrossEntropyLoss) Loss(targetClasses, input m.Matrix) m.Vector {
 	// techinically, one-hot vectors can either be an array containing 0s and 1s where 1 indicates the desired predication ([0, 0, 1, 0] - predication at index = 2 is the desired predication)
 	// but they can also be sparse i.e. contain index of the desired predications
-	// `CategoricalCrossEntropyLoss`function doesn't support sparse one-hot vectors at the moment but according to the defination, `predicatedClassesIdxs` act like one-hot vector
+	// `CategoricalCrossEntropyLoss`function doesn't support sparse one-hot vectors at the moment but according to the defination
+	// `predicatedClassesIdxs` acts like one-hot vector
 	predicatedClassesIdxs := []int{}
 	losses := []float64{}
 
@@ -70,4 +34,22 @@ func (l CategoricalCrossEntropyLoss) Loss(targetClasses, input m.Matrix) m.Vecto
 	}
 
 	return losses
+}
+
+// partial derivate of cross entropy loss function is -y/(y_hat)
+func (l CategoricalCrossEntropyLoss) Backward(targetClasses, input m.Matrix) m.Matrix {
+	output := m.AllocateMatrix(targetClasses.Rows(), targetClasses.Cols())
+
+	for i := range targetClasses {
+		for j := range targetClasses[i] {
+			output[i][j] = -targetClasses[i][j] / input[i][j]
+		}
+	}
+
+	// normalizing the gradient
+	output = output.ForEach(func(f float64) float64 {
+		return f / float64(len(input))
+	})
+
+	return output
 }

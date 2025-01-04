@@ -7,6 +7,8 @@ import (
 
 	m "github.com/0xmukesh/neural-networks/math"
 	"github.com/0xmukesh/neural-networks/neural"
+	"github.com/0xmukesh/neural-networks/neural/activations"
+	"github.com/0xmukesh/neural-networks/neural/losses"
 	"github.com/0xmukesh/neural-networks/utils"
 )
 
@@ -28,14 +30,10 @@ func main() {
 		{0, 0, 1},
 	}
 
-	// 6 input neurons and 5 output neurons
-	// weights = 5x6
-	// biases = 5x1
 	dl1 := neural.NewDenseLayer(6, 5)
-	// 5 input neurons and 5 output neurons
-	// weights = 5x5
-	// biases = 5x1
+	relu := activations.NewRelu()
 	dl2 := neural.NewDenseLayer(5, 5)
+	softmax := activations.NewSoftmax()
 
 	lowestLoss := math.MaxFloat64
 	optimalDl1Biases := dl1.Bias
@@ -60,12 +58,12 @@ func main() {
 		}).ToVector())
 
 		dl1Result := dl1.Forward(inputs)
-		reluResult := neural.ReluActivationFunc(dl1Result)
+		reluResult := relu.Forward(dl1Result)
 		dl2Result := dl2.Forward(reluResult)
-		softmaxResult := neural.SoftmaxActivationFunc(dl2Result)
+		softmaxResult := softmax.Forward(dl2Result)
 
-		ccel := neural.CategoricalCrossEntropyLoss{}
-		avgLoss := neural.CalculateLoss(targetClasses, softmaxResult, ccel)
+		ccel := losses.CategoricalCrossEntropyLoss{}
+		avgLoss := losses.CalculateLoss(targetClasses, softmaxResult, ccel)
 
 		if avgLoss < lowestLoss {
 			optimalDl1Biases = dl1.Bias
@@ -74,8 +72,7 @@ func main() {
 			optimalDl2Weights = dl2.Weights
 
 			lowestLoss = avgLoss
-
-			accuracy := neural.CalculateAccuracy(targetClasses, softmaxResult)
+			accuracy := losses.CalculateAccuracy(targetClasses, softmaxResult)
 
 			fmt.Printf("avg loss - %f and accuracy - %f\n", lowestLoss, accuracy)
 		} else {
