@@ -45,3 +45,17 @@ func (v Vector) Dot(u Vector) float64 {
 
 	return sum
 }
+
+func (v Vector) Diagonalize() Matrix {
+	m := AllocateMatrix(len(v), len(v))
+
+	for i := range m {
+		for j := range m[i] {
+			if i == j {
+				m[i][j] = v[i]
+			}
+		}
+	}
+
+	return m
+}

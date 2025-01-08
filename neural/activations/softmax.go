@@ -42,3 +42,29 @@ func (s *Softmax) Forward(input m.Matrix) m.Matrix {
 
 	return output
 }
+
+// (S_(i, j) * (delta)_(j, k)) - (S_(i, j) * S_(i, k))
+func (s *Softmax) Backward(outputs, dvalues m.Matrix) m.Tensor {
+	tensor := m.Tensor{}
+
+	for _, output := range outputs {
+		singleOutput := make(m.Vector, len(output))
+		copy(singleOutput, output)
+
+		jacobianMatrix := m.AllocateMatrix(len(output), len(output))
+
+		for i := range singleOutput {
+			jacobianMatrix[i][i] = singleOutput[i]
+		}
+
+		for i := range singleOutput {
+			for j := range singleOutput {
+				jacobianMatrix[i][j] -= singleOutput[i] * singleOutput[j]
+			}
+		}
+
+		tensor = append(tensor, jacobianMatrix)
+	}
+
+	return tensor
+}

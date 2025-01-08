@@ -37,18 +37,20 @@ func (l CategoricalCrossEntropyLoss) Loss(targetClasses, input m.Matrix) m.Vecto
 }
 
 // partial derivate of cross entropy loss function is -y/(y_hat)
-func (l CategoricalCrossEntropyLoss) Backward(targetClasses, input m.Matrix) m.Matrix {
+func (l CategoricalCrossEntropyLoss) Backward(targetClasses, dvalues m.Matrix) m.Matrix {
 	output := m.AllocateMatrix(targetClasses.Rows(), targetClasses.Cols())
 
 	for i := range targetClasses {
 		for j := range targetClasses[i] {
-			output[i][j] = -targetClasses[i][j] / input[i][j]
+			if targetClasses[i][j] == 1 {
+				output[i][j] = -targetClasses[i][j] / dvalues[i][j]
+			}
 		}
 	}
 
 	// normalizing the gradient
 	output = output.ForEach(func(f float64) float64 {
-		return f / float64(len(input))
+		return f / float64(len(dvalues))
 	})
 
 	return output

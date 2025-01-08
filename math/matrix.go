@@ -84,6 +84,12 @@ func (m Matrix) Add(n Matrix) Matrix {
 	return result
 }
 
+func (m Matrix) Subtract(n Matrix) Matrix {
+	return m.Add(n.ForEach(func(f float64) float64 {
+		return f * -1
+	}))
+}
+
 // m_(axb) + v_(a); adds vector `v` to each row vector of matrix `m`
 func (m Matrix) AddVector(v Vector) Matrix {
 	if m.Rows() != v.Size() {
