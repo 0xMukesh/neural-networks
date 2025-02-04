@@ -1,12 +1,12 @@
 package losses
 
 import (
-	m "github.com/0xmukesh/neural-networks/math"
-	"github.com/0xmukesh/neural-networks/utils"
+	m "nn/math"
+	"nn/utils"
 )
 
 type LossFn interface {
-	Loss(m.Matrix, m.Matrix) m.Vector
+	Loss(targetClasses, input m.Matrix) m.Vector
 }
 
 func CalculateLoss(targetClasses, input m.Matrix, lossFn LossFn) float64 {

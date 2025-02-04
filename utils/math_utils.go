@@ -1,7 +1,8 @@
 package utils
 
 import (
-	m "github.com/0xmukesh/neural-networks/math"
+	m "nn/math"
+
 	"golang.org/x/exp/constraints"
 )
 
@@ -39,4 +40,15 @@ func Mean[T Number](s []T) float64 {
 	})
 
 	return float64(sum) / float64(len(s))
+}
+
+func LinSpace(start, end float64, num int) m.Vector {
+	result := make(m.Vector, num)
+	step := (end - start) / float64(num-1)
+
+	for i := range result {
+		result[i] = start + float64(i)*step
+	}
+
+	return result
 }

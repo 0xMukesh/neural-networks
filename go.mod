@@ -1,4 +1,4 @@
-module github.com/0xmukesh/neural-networks
+module nn
 
 go 1.23.0
 

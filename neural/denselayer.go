@@ -3,8 +3,8 @@ package neural
 import (
 	"math/rand"
 
-	m "github.com/0xmukesh/neural-networks/math"
-	"github.com/0xmukesh/neural-networks/utils"
+	m "nn/math"
+	"nn/utils"
 )
 
 type DenseLayer struct {
@@ -16,10 +16,8 @@ type DenseLayer struct {
 func NewDenseLayer(nInputs, nNeurons int) *DenseLayer {
 	dl := &DenseLayer{}
 
-	// TODO: use gaussian distribution to generate random matrices with given size
 	dl.Weights = utils.RandMatrix(nNeurons, nInputs, func() float64 {
-		// transforms range of rand.Float64() from [0, 1) to [-1, 1)
-		return rand.Float64()*2 - 1
+		return rand.NormFloat64() * 0.1
 	})
 	dl.Bias = utils.ZeroMatrix(nNeurons, 1).ToVector()
 	dl.NInputs = nInputs
@@ -40,7 +38,7 @@ func (dl *DenseLayer) Forward(input m.Matrix) m.Matrix {
 	return output
 }
 
-func (dl DenseLayer) Backward(dvalues m.Matrix) (dw m.Matrix, di m.Matrix, db m.Vector) {
+func (dl DenseLayer) Backward(dvalues m.Matrix) (m.Matrix, m.Matrix, m.Matrix) {
 	// dvalues is next layer gradient
 	// dw is partial derivative with respect to weights
 	// di is partial derivative with respect to inputs
@@ -49,18 +47,18 @@ func (dl DenseLayer) Backward(dvalues m.Matrix) (dw m.Matrix, di m.Matrix, db m.
 	// shape of dvalues is (n_samples, n_neurons)
 	// shape of input is (n_samples, n_inputs)
 	// shape of weight is (n_inputs, n_neurons)
-	dw = dl.Input.Transpose().Multiply(dvalues)
-	di = dvalues.Multiply(dl.Weights.Transpose())
-	db = m.Vector{}
+	dw := dl.Input.Transpose().Multiply(dvalues)
+	di := dvalues.Multiply(dl.Weights.Transpose())
 
-	// adding row-wise
-	for _, v := range dvalues.Transpose() {
-		sum := utils.Reduce(v, 0.0, func(acc, curr float64) float64 {
-			return acc + curr
-		})
+	J := m.AllocateMatrix(len(dl.Bias), 1)
 
-		db = append(db, sum)
+	for i := range J {
+		for j := range J[i] {
+			J[i][j] = 1
+		}
 	}
 
-	return
+	db := dvalues.Multiply(J)
+
+	return dw, di, db
 }

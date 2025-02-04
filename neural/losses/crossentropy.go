@@ -3,7 +3,7 @@ package losses
 import (
 	"math"
 
-	m "github.com/0xmukesh/neural-networks/math"
+	m "nn/math"
 )
 
 // categorical cross entropy is a common choice for loss function whenever softmax activation function is used on the output layer

@@ -3,7 +3,7 @@ package activations
 import (
 	"math"
 
-	m "github.com/0xmukesh/neural-networks/math"
+	m "nn/math"
 )
 
 type Relu struct {

@@ -4,8 +4,8 @@ import (
 	"math"
 	"slices"
 
-	m "github.com/0xmukesh/neural-networks/math"
-	"github.com/0xmukesh/neural-networks/utils"
+	m "nn/math"
+	"nn/utils"
 )
 
 type Softmax struct {
@@ -44,27 +44,33 @@ func (s *Softmax) Forward(input m.Matrix) m.Matrix {
 }
 
 // (S_(i, j) * (delta)_(j, k)) - (S_(i, j) * S_(i, k))
-func (s *Softmax) Backward(outputs, dvalues m.Matrix) m.Tensor {
-	tensor := m.Tensor{}
+func (s *Softmax) Backward(outputs, dvalues m.Matrix) m.Matrix {
+	tensor := make(m.Tensor, len(outputs))
 
-	for _, output := range outputs {
-		singleOutput := make(m.Vector, len(output))
-		copy(singleOutput, output)
-
+	for i, output := range outputs {
 		jacobianMatrix := m.AllocateMatrix(len(output), len(output))
 
-		for i := range singleOutput {
-			jacobianMatrix[i][i] = singleOutput[i]
-		}
+		for i := range output {
+			for j := range output {
+				kroneckerDelta := 0.0
+				if i == j {
+					kroneckerDelta = 1.0
+				}
 
-		for i := range singleOutput {
-			for j := range singleOutput {
-				jacobianMatrix[i][j] -= singleOutput[i] * singleOutput[j]
+				jacobianMatrix[i][j] = output[i] * (kroneckerDelta - output[j])
 			}
 		}
 
-		tensor = append(tensor, jacobianMatrix)
+		tensor[i] = jacobianMatrix
 	}
 
-	return tensor
+	output := m.AllocateMatrix(outputs.Rows(), outputs.Cols())
+
+	for i := range output {
+		for j := range output[i] {
+			output[i][j] = dvalues[i].Dot(tensor[i][j])
+		}
+	}
+
+	return output
 }
