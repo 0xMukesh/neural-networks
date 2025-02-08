@@ -30,14 +30,13 @@ func (l *CategoricalCrossEntropyLoss) Loss(targetClasses, networkOutput m.Matrix
 		}
 	}
 
+	epsilon := 1e-15
+
 	for i, v := range predicatedClassesIdxs {
 		predicatedValue := networkOutput[i][v]
+		predicatedValue = math.Max(epsilon, math.Min(1-epsilon, predicatedValue))
 
-		if predicatedValue == 0 {
-			losses = append(losses, 0)
-		} else {
-			losses = append(losses, -math.Log(predicatedValue))
-		}
+		losses = append(losses, -math.Log(predicatedValue))
 	}
 
 	return losses
