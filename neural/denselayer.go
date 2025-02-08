@@ -1,6 +1,7 @@
 package neural
 
 import (
+	"math"
 	"math/rand"
 
 	m "nn/math"
@@ -8,49 +9,40 @@ import (
 )
 
 type DenseLayer struct {
-	Input, Weights    m.Matrix
-	Bias              m.Vector
-	NInputs, NNeurons int
+	Input, Output, Weights, Bias m.Matrix
+	DWeight, DInput, DBias       m.Matrix
+	NInputs, NNeurons            int
 }
 
 func NewDenseLayer(nInputs, nNeurons int) *DenseLayer {
 	dl := &DenseLayer{}
 
-	dl.Weights = utils.RandMatrix(nNeurons, nInputs, func() float64 {
-		return rand.NormFloat64() * 0.1
+	stddev := math.Sqrt(2.0 / float64(nInputs))
+	dl.Weights = utils.RandMatrix(nInputs, nNeurons, func() float64 {
+		return rand.NormFloat64() * stddev
 	})
-	dl.Bias = utils.ZeroMatrix(nNeurons, 1).ToVector()
+	dl.Bias = m.AllocateMatrix(1, nNeurons)
+
 	dl.NInputs = nInputs
 	dl.NNeurons = nNeurons
 
 	return dl
 }
 
-func (dl *DenseLayer) Forward(input m.Matrix) m.Matrix {
-	output := m.Matrix{}
-
-	for _, v := range input {
-		output = append(output, dl.Weights.Multiply(v.ToMatrix()).ToVector().Add(dl.Bias))
-	}
-
+func (dl *DenseLayer) Forward(input m.Matrix) {
 	dl.Input = input
+	dl.Output = m.AllocateMatrix(len(input), dl.NNeurons)
 
-	return output
+	for i, v := range input {
+		dl.Output[i] = v.ToRowMatrix().Multiply(dl.Weights).Add(dl.Bias).ToFloatSlice()
+	}
 }
 
-func (dl DenseLayer) Backward(dvalues m.Matrix) (m.Matrix, m.Matrix, m.Matrix) {
-	// dvalues is next layer gradient
-	// dw is partial derivative with respect to weights
-	// di is partial derivative with respect to inputs
-	// db is partial derivative with respect to biases
+func (dl *DenseLayer) Backward(dvalues m.Matrix) {
+	dl.DWeight = dl.Input.Transpose().Multiply(dvalues)
+	dl.DInput = dvalues.Multiply(dl.Weights.Transpose())
 
-	// shape of dvalues is (n_samples, n_neurons)
-	// shape of input is (n_samples, n_inputs)
-	// shape of weight is (n_inputs, n_neurons)
-	dw := dl.Input.Transpose().Multiply(dvalues)
-	di := dvalues.Multiply(dl.Weights.Transpose())
-
-	J := m.AllocateMatrix(len(dl.Bias), 1)
+	J := m.AllocateMatrix(dl.Bias.Cols(), 1)
 
 	for i := range J {
 		for j := range J[i] {
@@ -58,7 +50,5 @@ func (dl DenseLayer) Backward(dvalues m.Matrix) (m.Matrix, m.Matrix, m.Matrix) {
 		}
 	}
 
-	db := dvalues.Multiply(J)
-
-	return dw, di, db
+	dl.DBias = dvalues.Multiply(J)
 }

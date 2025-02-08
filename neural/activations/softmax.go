@@ -9,16 +9,17 @@ import (
 )
 
 type Softmax struct {
-	Input m.Matrix
+	Input, Output m.Matrix
+	DInput        m.Matrix
 }
 
 func NewSoftmax() *Softmax {
 	return &Softmax{}
 }
 
-// softmax activation function takes in unnormalized data from ReLU and converts it into normalized i.e. the values lie in between [0, 1] and the values are inclusive i.e. all of the always add up to 1 as they are probablities/confidence scores
-func (s *Softmax) Forward(input m.Matrix) m.Matrix {
-	output := m.AllocateMatrix(input.Rows(), input.Cols())
+func (s *Softmax) Forward(input m.Matrix) {
+	s.Input = input
+	s.Output = m.AllocateMatrix(input.Rows(), input.Cols())
 
 	for i := range input {
 		max := slices.Max(input[i])
@@ -34,20 +35,15 @@ func (s *Softmax) Forward(input m.Matrix) m.Matrix {
 		})
 
 		for j := range input[i] {
-			output[i][j] = exps[j] / sum
+			s.Output[i][j] = exps[j] / sum
 		}
 	}
-
-	s.Input = input
-
-	return output
 }
 
-// (S_(i, j) * (delta)_(j, k)) - (S_(i, j) * S_(i, k))
-func (s *Softmax) Backward(outputs, dvalues m.Matrix) m.Matrix {
-	tensor := make(m.Tensor, len(outputs))
+func (s *Softmax) Backward(dvalues m.Matrix) {
+	tensor := make(m.Tensor, len(s.Output))
 
-	for i, output := range outputs {
+	for i, output := range s.Output {
 		jacobianMatrix := m.AllocateMatrix(len(output), len(output))
 
 		for i := range output {
@@ -64,13 +60,21 @@ func (s *Softmax) Backward(outputs, dvalues m.Matrix) m.Matrix {
 		tensor[i] = jacobianMatrix
 	}
 
-	output := m.AllocateMatrix(outputs.Rows(), outputs.Cols())
+	s.DInput = m.AllocateMatrix(s.Output.Rows(), s.Output.Cols())
 
-	for i := range output {
-		for j := range output[i] {
-			output[i][j] = dvalues[i].Dot(tensor[i][j])
+	for i := range s.DInput {
+		for j := range s.DInput[i] {
+			s.DInput[i][j] = dvalues[i].Dot(tensor[i][j])
 		}
 	}
+}
 
-	return output
+func (s *Softmax) BackwardWithCcel(targetClasses m.Matrix) {
+	s.DInput = m.AllocateMatrix(s.Output.Rows(), s.Output.Cols())
+
+	for i := range s.Output {
+		for j := range s.Output[i] {
+			s.DInput[i][j] = (s.Output[i][j] - targetClasses[i][j]) / float64(len(s.Output))
+		}
+	}
 }

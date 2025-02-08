@@ -8,14 +8,16 @@ func (v Vector) Size() int {
 	return len(v)
 }
 
-func (v Vector) ToMatrix() Matrix {
-	matrix := AllocateMatrix(len(v), 1)
+func (v Vector) ToRowMatrix() Matrix {
+	m := AllocateMatrix(1, len(v))
 
-	for i := range v {
-		matrix[i] = Vector{v[i]}
+	for i := range m {
+		for j := range m[i] {
+			m[i][j] = v[j]
+		}
 	}
 
-	return matrix
+	return m
 }
 
 func (v Vector) Add(u Vector) Vector {

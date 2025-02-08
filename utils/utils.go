@@ -1,6 +1,11 @@
 package utils
 
-import "cmp"
+import (
+	"cmp"
+	"fmt"
+	m "nn/math"
+	"strings"
+)
 
 func Reduce[T any](s []T, initial T, f func(T, T) T) T {
 	result := initial
@@ -21,4 +26,12 @@ func MaxElemIdx[T cmp.Ordered](s []T) int {
 	}
 
 	return idx
+}
+
+func PrintMatrix(label string, matrix m.Matrix) {
+	fmt.Printf("%s:\n", label)
+	for _, v := range matrix {
+		fmt.Printf("%+v\n", v)
+	}
+	fmt.Println(strings.Repeat("=", 10))
 }

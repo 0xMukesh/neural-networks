@@ -6,15 +6,10 @@ import (
 )
 
 type LossFn interface {
-	Loss(targetClasses, input m.Matrix) m.Vector
+	Loss(targetClasses, output m.Matrix) m.Vector
 }
 
-func CalculateLoss(targetClasses, input m.Matrix, lossFn LossFn) float64 {
-	losses := lossFn.Loss(targetClasses, input)
-	return utils.Mean(losses)
-}
-
-func CalculateAccuracy(targetClasses, input m.Matrix) float64 {
+func CalculateAccuracy(targetClasses, networkOutput m.Matrix) float64 {
 	predicatedClassesIdx := []int{}
 
 	for i := range targetClasses {
@@ -28,7 +23,7 @@ func CalculateAccuracy(targetClasses, input m.Matrix) float64 {
 	accuracies := []int{}
 
 	for i, v := range predicatedClassesIdx {
-		maxElemIdx := utils.MaxElemIdx(input[i])
+		maxElemIdx := utils.MaxElemIdx(networkOutput[i])
 		predicatedClassIdx := v
 
 		if maxElemIdx == predicatedClassIdx {

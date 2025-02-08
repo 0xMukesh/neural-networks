@@ -6,17 +6,19 @@ import (
 	m "nn/math"
 )
 
-// categorical cross entropy is a common choice for loss function whenever softmax activation function is used on the output layer
-type CategoricalCrossEntropyLoss struct{}
+type CategoricalCrossEntropyLoss struct {
+	NetworkOutput, TargetClasses m.Matrix
+	DInput                       m.Matrix
+}
 
-// `targetClasses` is a matrix of one-hot vectors
-// TODO: check if `targetClasses` is _actually_ a matrix of one-hot vectors
-// `input` is the result from softmax activation function
-func (l CategoricalCrossEntropyLoss) Loss(targetClasses, input m.Matrix) m.Vector {
-	// techinically, one-hot vectors can either be an array containing 0s and 1s where 1 indicates the desired predication ([0, 0, 1, 0] - predication at index = 2 is the desired predication)
-	// but they can also be sparse i.e. contain index of the desired predications
-	// `CategoricalCrossEntropyLoss`function doesn't support sparse one-hot vectors at the moment but according to the defination
-	// `predicatedClassesIdxs` acts like one-hot vector
+func NewCcel() *CategoricalCrossEntropyLoss {
+	return &CategoricalCrossEntropyLoss{}
+}
+
+func (l *CategoricalCrossEntropyLoss) Loss(targetClasses, networkOutput m.Matrix) m.Vector {
+	l.NetworkOutput = networkOutput
+	l.TargetClasses = targetClasses
+
 	predicatedClassesIdxs := []int{}
 	losses := []float64{}
 
@@ -29,29 +31,28 @@ func (l CategoricalCrossEntropyLoss) Loss(targetClasses, input m.Matrix) m.Vecto
 	}
 
 	for i, v := range predicatedClassesIdxs {
-		predicatedValue := input[i][v]
-		losses = append(losses, -math.Log(predicatedValue))
+		predicatedValue := networkOutput[i][v]
+
+		if predicatedValue == 0 {
+			losses = append(losses, 0)
+		} else {
+			losses = append(losses, -math.Log(predicatedValue))
+		}
 	}
 
 	return losses
 }
 
-// partial derivate of cross entropy loss function is -y/(y_hat)
-func (l CategoricalCrossEntropyLoss) Backward(targetClasses, dvalues m.Matrix) m.Matrix {
-	output := m.AllocateMatrix(targetClasses.Rows(), targetClasses.Cols())
+func (l *CategoricalCrossEntropyLoss) Backward() {
+	l.DInput = m.AllocateMatrix(l.TargetClasses.Rows(), l.TargetClasses.Cols())
 
-	for i := range targetClasses {
-		for j := range targetClasses[i] {
-			if targetClasses[i][j] == 1 {
-				output[i][j] = -targetClasses[i][j] / dvalues[i][j]
-			}
+	for i := range l.TargetClasses {
+		for j := range l.TargetClasses[i] {
+			l.DInput[i][j] = -l.TargetClasses[i][j] / l.NetworkOutput[i][j]
 		}
 	}
 
-	// normalizing the gradient
-	output = output.ForEach(func(f float64) float64 {
-		return f / float64(len(dvalues))
+	l.DInput = l.DInput.ForEach(func(f float64) float64 {
+		return f / float64(len(l.NetworkOutput))
 	})
-
-	return output
 }

@@ -2,24 +2,46 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"nn/parsers"
+	"nn/datasets"
+	"nn/neural"
+	"nn/neural/activations"
+	"nn/neural/losses"
+	"nn/neural/optimizers"
+	"nn/utils"
 )
 
 func main() {
-	parser := parsers.NewMnistParser("datasets/mnist/train-images", "datasets/mnist/train-labels")
+	X, Y := datasets.NewSpiralData(100, 3)
 
-	_, err := parser.ReadImages()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	dl1 := neural.NewDenseLayer(2, 64)
+	relu := activations.NewRelu()
+	dl2 := neural.NewDenseLayer(64, 3)
+	softmax := activations.NewSoftmax()
+	ccel := losses.NewCcel()
+	sgd := optimizers.NewSGD(0.01)
 
-	labels, err := parser.ReadLabels()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	for i := range 10_001 {
+		dl1.Forward(X)
+		relu.Forward(dl1.Output)
+		dl2.Forward(relu.Output)
+		softmax.Forward(dl2.Output)
 
-	for _, v := range labels {
-		fmt.Println(v)
+		networkLosses := ccel.Loss(Y, softmax.Output)
+		meanLoss := utils.Mean(networkLosses)
+		meanAccuracy := losses.CalculateAccuracy(Y, softmax.Output)
+
+		if i%100 == 0 {
+			fmt.Printf("epoch - %d\n", i)
+			fmt.Printf("mean loss - %f\n", meanLoss)
+			fmt.Printf("mean accuracy - %f\n", meanAccuracy)
+		}
+
+		softmax.BackwardWithCcel(Y)
+		dl2.Backward(softmax.DInput)
+		relu.Backward(dl2.DInput)
+		dl1.Backward(relu.DInput)
+
+		sgd.UpdateParams(dl1)
+		sgd.UpdateParams(dl2)
 	}
 }
