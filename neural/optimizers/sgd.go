@@ -2,15 +2,16 @@ package optimizers
 
 import "nn/neural"
 
+// w_(t + 1) = w_(t) - (LR) * (gradient)
 type SGD struct {
 	InitialLR, CurrentLR, LRDecayRate, NIterations float64
 }
 
-func NewSGD(learningRate, learningRateDecay float64) *SGD {
+func NewSGD(lr, lrDecay float64) *SGD {
 	return &SGD{
-		InitialLR:   learningRate,
-		CurrentLR:   learningRate,
-		LRDecayRate: learningRateDecay,
+		InitialLR:   lr,
+		CurrentLR:   lr,
+		LRDecayRate: lrDecay,
 		NIterations: 0,
 	}
 }
@@ -20,11 +21,9 @@ func (sgd *SGD) PreUpdateParams() {
 }
 
 func (sgd *SGD) UpdateParams(dl *neural.DenseLayer) {
-	for i := range dl.Weights {
-		for j := range dl.Weights[i] {
-			dl.Weights[i][j] -= sgd.CurrentLR * dl.DWeight[i][j]
-		}
-	}
+	dl.Weights = dl.Weights.Subtract(dl.DWeight).ForEach(func(f float64) float64 {
+		return f * sgd.CurrentLR
+	})
 
 	for i := range dl.Bias {
 		for j := range dl.Bias[i] {

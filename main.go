@@ -18,9 +18,9 @@ func main() {
 	dl2 := neural.NewDenseLayer(64, 3)
 	softmax := activations.NewSoftmax()
 	ccel := losses.NewCcel()
-	sgd := optimizers.NewSGD(0.35, 0.001)
+	sgdMomentum := optimizers.NewSGDMomentum(1.0, 0.01, 0.7)
 
-	for i := range 20_001 {
+	for i := range 10_001 {
 		dl1.Forward(X)
 		relu.Forward(dl1.Output)
 		dl2.Forward(relu.Output)
@@ -41,9 +41,9 @@ func main() {
 		relu.Backward(dl2.DInput)
 		dl1.Backward(relu.DInput)
 
-		sgd.PreUpdateParams()
-		sgd.UpdateParams(dl1)
-		sgd.UpdateParams(dl2)
-		sgd.PostUpdateParams()
+		sgdMomentum.PreUpdateParams()
+		sgdMomentum.UpdateParams(dl1)
+		sgdMomentum.UpdateParams(dl2)
+		sgdMomentum.PostUpdateParams()
 	}
 }

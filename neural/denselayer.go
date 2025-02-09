@@ -11,6 +11,7 @@ import (
 type DenseLayer struct {
 	Input, Output, Weights, Bias m.Matrix
 	DWeight, DInput, DBias       m.Matrix
+	WeightMomentum, BiasMomentum m.Matrix
 	NInputs, NNeurons            int
 }
 
